@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고등학교 3년 생활 - 추억 기록하기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #building {
+            position: relative;
+            width: 1200px;
+            height: 800px;
+            background: linear-gradient(to bottom, #FFA07A 0%, #FF8C69 100%);
+            border: 5px solid #8B4513;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .floor {
+            position: absolute;
+            width: 100%;
+            height: 200px;
+            border-bottom: 4px solid #8B4513;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+        }
+        
+        #floor-4 {
+            top: 0;
+            background: linear-gradient(to right, #FFD700 0%, #FFA500 100%);
+        }
+        
+        #floor-3 {
+            top: 200px;
+            background: linear-gradient(to right, #87CEFA 0%, #4682B4 100%);
+        }
+        
+        #floor-2 {
+            top: 400px;
+            background: linear-gradient(to right, #FFB6C1 0%, #FF69B4 100%);
+        }
+        
+        #floor-1 {
+            top: 600px;
+            background: linear-gradient(to right, #90EE90 0%, #32CD32 100%);
+            border-bottom: none;
+        }
+        
+        .floor-label {
+            position: absolute;
+            left: 20px;
+            top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        
+        .room {
+            position: absolute;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #333;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        .room:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .room.has-memory {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-color: #e17055;
+        }
+        
+        /* 4층 방들 */
+        #graduation {
+            right: 100px;
+            top: 80px;
+        }
+        
+        #year3-life {
+            right: 350px;
+            top: 80px;
+        }
+        
+        /* 3층 방들 */
+        #year2-life {
+            left: 450px;
+            top: 80px;
+        }
+        
+        /* 2층 방들 */
+        #year1-life {
+            right: 400px;
+            top: 80px;
+        }
+        
+        #entrance {
+            left: 150px;
+            top: 80px;
+        }
+        
+        #character {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #FF1493;
+            border-radius: 50%;
+            border: 3px solid #C71585;
+            z-index: 100;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .plant {
+            position: absolute;
+            font-size: 40px;
+            z-index: 50;
+        }
+        
+        .pine {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .forsythia {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        #info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            min-width: 280px;
+            z-index: 1000;
+        }
+        
+        #info-panel h2 {
+            color: #FF1493;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+        
+        #info-panel p {
+            color: #666;
+            margin: 8px 0;
+            font-size: 15px;
+        }
+        
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        #modal-content h2 {
+            color: #FF1493;
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+        
+        #memory-display {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 100px;
+        }
+        
+        #memory-display.empty {
+            color: #999;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #memory-display p {
+            line-height: 2;
+            color: #333;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        #memory-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Malgun Gothic', sans-serif;
+            resize: vertical;
+            margin: 20px 0;
+        }
+        
+        #memory-input:focus {
+            outline: none;
+            border-color: #FF1493;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #FF1493;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #C71585;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            color: #333;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        #instructions div {
+            margin: 8px 0;
+            font-weight: bold;
+        }
+        
+        .stairs {
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background: #8B4513;
+            border: 2px solid #654321;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            opacity: 0.7;
+        }
+        
+        .stairs-up {
+            right: 20px;
+            bottom: 10px;
+        }
+        
+        .stairs-down {
+            left: 20px;
+            bottom: 10px;
+        }
+        
+        #edit-mode {
+            display: none;
+        }
+        
+        #view-mode {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="building">
+            <!-- 4층: 3학년 생활 + 졸업 -->
+            <div class="floor" id="floor-4">
+                <span class="floor-label">4층 - 고3 & 졸업</span>
+                <div class="room" id="year3-life" onclick="openRoom('year3-life', '🎓 3학년 생활')">
+                    🎓 3학년 생활
+                </div>
+                <div class="room" id="graduation" onclick="openRoom('graduation', '🎉 졸업')">
+                    🎉 졸업
+                </div>
+                <div class="stairs stairs-down">⬇️ 계단</div>
+                
+                <div class="plant pine" style="left: 650px; top: 120px;">🌲</div>
+                <div class="plant forsythia" style="left: 750px; top: 130px;">🌼</div>
+            </div>
+            
+            <!-- 3층: 2학년 생활 -->
+            <div class="floor" id="floor-3">
+                <span class="floor-label">3층 - 고2</span>
+                <div class="room" id="year2-life" onclick="openRoom('year2-life', '💪 2학년 생활')">
+                    💪 2학년 생활
+                </div>
+                <div class="stairs stairs-up">⬆️ 계단</div>
+                <div class="stairs stairs-down">⬇️ 계단</div>
+                
+                <div class="plant pine" style="right: 200px; top: 130px;">🌲</div>
+                <div class="plant forsythia" style="right: 120px; top: 120px;">🌼</div>
+                <div class="plant forsythia" style="left: 250px; top: 140px;">🌼</div>
+            </div>
+            
+            <!-- 2층: 입학 + 1학년 생활 -->
+            <div class="floor" id="floor-2">
+                <span class="floor-label">2층 - 입학 & 고1</span>
+                <div class="room" id="entrance" onclick="openRoom('entrance', '🎒 입학')">
+                    🎒 입학
+                </div>
+                <div class="room" id="year1-life" onclick="openRoom('year1-life', '📚 1학년 생활')">
+                    📚 1학년 생활
+                </div>
+                <div class="stairs stairs-up">⬆️ 계단</div>
+                <div class="stairs stairs-down">⬇️ 계단</div>
+                
+                <div class="plant pine" style="left: 320px; top: 130px;">🌲</div>
+                <div class="plant forsythia" style="left: 420px; top: 140px;">🌼</div>
+                <div class="plant pine" style="right: 550px; top: 120px;">🌲</div>
+            </div>
+            
+            <!-- 1층: 빈 공간 -->
+            <div class="floor" id="floor-1">
+                <span class="floor-label">1층 - 로비</span>
+                <div class="stairs stairs-up">⬆️ 계단</div>
+                
+                <div class="plant pine" style="left: 200px; top: 120px;">🌲</div>
+                <div class="plant forsythia" style="left: 300px; top: 130px;">🌼</div>
+                <div class="plant pine" style="right: 300px; top: 120px;">🌲</div>
+                <div class="plant forsythia" style="right: 200px; top: 130px;">🌼</div>
+                <div class="plant forsythia" style="left: 600px; top: 140px;">🌼</div>
+            </div>
+            
+            <div id="character">😊</div>
+        </div>
+    </div>
+    
+    <div id="info-panel">
+        <h2>🏫 고등학교 추억 기록</h2>
+        <p>📍 현재 층: <span id="current-floor">1층</span></p>
+        <p>💡 W,A,S,D로 이동하세요!</p>
+        <p>🚪 방을 클릭하여 추억을 기록하세요</p>
+        <p>✨ 기록된 방: <span id="memory-count">0</span>/5</p>
+    </div>
+    
+    <div id="instructions">
+        <div><strong>🎮 조작법</strong></div>
+        <div>W - 위층으로 이동 ⬆️</div>
+        <div>A - 왼쪽으로 이동 ⬅️</div>
+        <div>S - 아래층으로 이동 ⬇️</div>
+        <div>D - 오른쪽으로 이동 ➡️</div>
+        <div style="margin-top: 10px;">🖱️ 방 클릭으로 추억 기록</div>
+    </div>
+    
+    <div id="modal">
+        <div id="modal-content">
+            <h2 id="modal-title"></h2>
+            
+            <!-- 보기 모드 -->
+            <div id="view-mode">
+                <div id="memory-display" class="empty">
+                    아직 기록된 추억이 없습니다. 추억을 기록해보세요!
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="enterEditMode()">✏️ 추억 기록하기</button>
+                    <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
+                </div>
+            </div>
+            
+            <!-- 편집 모드 -->
+            <div id="edit-mode">
+                <textarea id="memory-input" placeholder="이곳에 당신의 추억을 자유롭게 기록해보세요...
+                
+예시:
+- 오늘 있었던 일
+- 친구들과의 추억
+- 선생님과의 대화
+- 시험 공부 이야기
+- 축제, 체육대회 등의 행사
+- 느낀 점과 감정
+
+자유롭게 적어주세요!"></textarea>
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="saveMemory()">💾 저장하기</button>
+                    <button class="btn btn-danger" onclick="deleteMemory()">🗑️ 삭제하기</button>
+                    <button class="btn btn-secondary" onclick="cancelEdit()">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const character = document.getElementById('character');
+        const floorText = document.getElementById('current-floor');
+        const modal = document.getElementById('modal');
+        const memoryCountText = document.getElementById('memory-count');
+        
+        let currentFloor = 1;
+        let charX = 100;
+        let currentRoomId = null;
+        
+        // LocalStorage에 추억 저장
+        let memories = JSON.parse(localStorage.getItem('highschoolMemories')) || {};
+        
+        const floorPositions = {
+            1: 700,
+            2: 500,
+            3: 300,
+            4: 100
+        };
+        
+        const floorNames = {
+            1: '1층 - 로비',
+            2: '2층 - 입학 & 고1',
+            3: '3층 - 고2',
+            4: '4층 - 고3 & 졸업'
+        };
+        
+        function updateCharacter() {
+            const y = floorPositions[currentFloor];
+            character.style.left = charX + 'px';
+            character.style.top = y + 'px';
+            floorText.textContent = floorNames[currentFloor];
+        }
+        
+        function updateMemoryCount() {
+            const count = Object.keys(memories).length;
+            memoryCountText.textContent = count;
+            
+            // 추억이 있는 방 표시
+            Object.keys(memories).forEach(roomId => {
+                const room = document.getElementById(roomId);
+                if (room && memories[roomId]) {
+                    room.classList.add('has-memory');
+                }
+            });
+        }
+        
+        function openRoom(roomId, roomTitle) {
+            currentRoomId = roomId;
+            document.getElementById('modal-title').textContent = roomTitle;
+            
+            const memoryDisplay = document.getElementById('memory-display');
+            const memory = memories[roomId];
+            
+            if (memory) {
+                memoryDisplay.classList.remove('empty');
+                memoryDisplay.innerHTML = memory.replace(/\n/g, '<br>');
+            } else {
+                memoryDisplay.classList.add('empty');
+                memoryDisplay.textContent = '아직 기록된 추억이 없습니다. 추억을 기록해보세요!';
+            }
+            
+            document.getElementById('view-mode').style.display = 'block';
+            document.getElementById('edit-mode').style.display = 'none';
+            modal.style.display = 'flex';
+        }
+        
+        function enterEditMode() {
+            document.getElementById('view-mode').style.display = 'none';
+            document.getElementById('edit-mode').style.display = 'block';
+            
+            const textarea = document.getElementById('memory-input');
+            textarea.value = memories[currentRoomId] || '';
+            textarea.focus();
+        }
+        
+        function saveMemory() {
+            const textarea = document.getElementById('memory-input');
+            const memoryText = textarea.value.trim();
+            
+            if (memoryText) {
+                memories[currentRoomId] = memoryText;
+                localStorage.setItem('highschoolMemories', JSON.stringify(memories));
+                
+                const room = document.getElementById(currentRoomId);
+                room.classList.add('has-memory');
+                
+                alert('✅ 추억이 저장되었습니다!');
+                updateMemoryCount();
+                openRoom(currentRoomId, document.getElementById('modal-title').textContent);
+            } else {
+                alert('⚠️ 추억을 입력해주세요!');
+            }
+        }
+        
+        function deleteMemory() {
+            if (confirm('정말로 이 추억을 삭제하시겠습니까?')) {
+                delete memories[currentRoomId];
+                localStorage.setItem('highschoolMemories', JSON.stringify(memories));
+                
+                const room = document.getElementById(currentRoomId);
+                room.classList.remove('has-memory');
+                
+                alert('🗑️ 추억이 삭제되었습니다.');
+                updateMemoryCount();
+                openRoom(currentRoomId, document.getElementById('modal-title').textContent);
+            }
+        }
+        
+        function cancelEdit() {
+            openRoom(currentRoomId, document.getElementById('modal-title').textContent);
+        }
+        
+        function closeModal() {
+            modal.style.display = 'none';
+            currentRoomId = null;
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            // 모달이 열려있고 입력창에 포커스가 있으면 이동 방지
+            if (modal.style.display === 'flex' && document.activeElement === document.getElementById('memory-input')) {
+                return;
+            }
+            
+            const key = e.key.toLowerCase();
+            
+            switch(key) {
+                case 'w':
+                    if (currentFloor < 4) {
+                        currentFloor++;
+                        character.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            character.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                    break;
+                case 's':
+                    if (currentFloor > 1) {
+                        currentFloor--;
+                        character.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            character.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                    break;
+                case 'a':
+                    charX = Math.max(50, charX - 30);
+                    character.style.transform = 'scaleX(-1)';
+                    setTimeout(() => {
+                        character.style.transform = 'scaleX(1)';
+                    }, 300);
+                    break;
+                case 'd':
+                    charX = Math.min(1100, charX + 30);
+                    character.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        character.style.transform = 'scale(1)';
+                    }, 200);
+                    break;
+            }
+            updateCharacter();
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // 초기 설정
+        updateCharacter();
+        updateMemoryCount();
+    </script>
+</body>
+</html>
